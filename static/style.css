@@ -1,0 +1,36 @@
+body {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    height: 100vh;
+    margin: 0;
+}
+main {
+    padding: 50px;
+}
+aside {
+    background-image: url("/hero.jpg");
+    background-size: cover;
+}
+.login {
+    background-color: lightblue;
+    width: 100px;
+    padding: 10px 20px;
+    text-align: center;
+    margin: 10px;
+}
+.login:hover{
+    cursor: pointer;
+}
+#otpverify {
+    display: none;
+}
+.img {
+    display: inline-block;
+    width: 100px;
+    text-align: center;
+    padding: 10px 20px;
+}
+img {
+    width: 50px;
+}

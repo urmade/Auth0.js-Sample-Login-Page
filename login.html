@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Auth0 Embedded login</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <aside></aside>
+    <main>
+        <h1>Welcome to Auth0 Generic Login!</h1>
+        <p>
+            This template uses the Auth0.js library to power a secure and flexible authentication - just the way your
+            brand needs it. Try out the different methods below!
+        </p>
+        <form id="sms">
+            <h3>Sign in with your phone</h3>
+            <input id="phoneNumber" type="tel" placeholder="Phone Number">
+            <div class="login" onclick="pwlessLogin()">Get Code</div>
+            <div id="otpverify">
+                <input id="otp" type="text" placeholder="Login Code">
+                <div class="login" onclick="verifypwless()">Sign In</div>
+            </div>
+        </form>
+        <form id="password">
+            <h3>Sign in with your email and password</h3>
+            <input id="email" type="email" placeholder="Email">
+            <input id="pw" type="password" placeholder="Password">
+            <div class="login" onclick="login()">Sign in</div>
+        </form>
+        <form id="social">
+            <h3>Sign in with your Social Providers</h3>
+            <div class="img" onclick="federatedLogin('google-oauth2')"><img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png">
+            </div>
+            <div class="img" onclick="federatedLogin('facebook')")><img
+                    src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"></div>
+        </form>
+
+        <!-- Auth0 Login Script -->
+        <script src="/config.js"></script>
+        <script src="https://cdn.auth0.com/js/auth0/9.11/auth0.min.js"></script>
+        <script>
+
+            var params = {
+                domain: config.domain,
+                clientID: config.clientId,
+                responseType: "token id_token",
+                redirectUri: config.redirectUri,
+                responseMode: "form_post"
+            }
+            var webAuth = new auth0.WebAuth(params);
+            var databaseConnection = config.database;
+
+            function login() {
+                var username = document.getElementById('email').value;
+                var password = document.getElementById('pw').value;
+                webAuth.login({
+                    realm: databaseConnection,
+                    username: username,
+                    password: password
+                }, function (err) {
+                    if (err) displayError(err);
+                });
+            }
+            function pwlessLogin() {
+                webAuth.passwordlessStart({
+                    connection: 'sms',
+                    send: 'code',
+                    phoneNumber: document.getElementById('phoneNumber').value
+                }, function (err, res) {
+                    if (err) displayError(err);
+                    else {
+                        document.getElementById("otpverify").style.display = "block";
+                    }
+                    // handle errors or continue
+                }
+                );
+            }
+            function verifypwless() {
+                webAuth.passwordlessLogin({
+                    connection: 'sms',
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    verificationCode: document.getElementById('otp').value
+                }, function (err, res) {
+                    if (err) displayError(err);
+                    else console.log(res);
+                    // handle errors or continue
+                }
+                );
+            }
+            function federatedLogin(connection) {
+                webAuth.authorize({
+                    clientID: config.clientId,
+                    redirectUri: config.redirectUri,
+                    connection: connection
+                })
+            }
+
+            function signup() {
+                var email = document.getElementById('signInName').value;
+                var password = document.getElementById('password').value;
+
+                webAuth.redirect.signupAndLogin({
+                    connection: databaseConnection,
+                    email: email,
+                    password: password
+                }, function (err) {
+                    if (err) displayError(err);
+                });
+            }
+
+            function displayError(err) {
+                var errorMessage = document.getElementById('error-message');
+                errorMessage.innerHTML = err.policy || err.description;
+                errorMessage.style.display = 'block';
+            }
+            function listenForPwInput(el) {
+                if (el.getAttribute("mode") === "pwless") return;
+                else if (el.value && el.value.length > 0) {
+                    document.getElementById("next").onclick = login;
+                    document.getElementById("next").innerText = "SIGN IN WITH PASSWORD";
+                }
+                else {
+                    document.getElementById("next").onclick = pwlessLogin;
+                    document.getElementById("next").innerText = "SIGN IN WITH EMAIL";
+                }
+            }
+        </script>
+
+
+
+    </main>
+</body>
+
+</html>

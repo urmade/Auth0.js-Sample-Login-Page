@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Application Selection</title>
+    <link rel="icon" href="https://cdn.auth0.com/website/auth0_favicon.svg">
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .appPicker {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10vh;
+        }
+
+        .app {
+            text-align: center;
+            text-decoration: none;
+            color: black;
+        }
+
+        .app img {
+            width: 100px;
+            transition: .5s all;
+        }
+
+        .label {
+            transition: .5s all;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 0;
+        }
+
+        .app:hover {
+            cursor: pointer;
+        }
+
+        .app:hover>.label {
+            background-color: lightgrey;
+        }
+
+        .app:hover>img {
+            width: 110px;
+        }
+
+        .profile {
+            margin-top: 50px;
+        }
+
+        td {
+            padding: 10px;
+        }
+
+        #logout {
+            display: none;
+        }
+    </style>
+</head>
+<h1>Choose an application to continue:</h1>
+<div class="appPicker">
+
+    <a class="app" href="/login">
+        <img src="/auth0.png">
+        <p class="label">Custom Login Page (powered by Auth0)</p>
+    </a>
+</div>
+
+<div class="profile">
+    <h2 class="profileHeader"></h2>
+    <table class="parsedProfile">
+
+    </table>
+</div>
+<script src="https://cdn.auth0.com/js/auth0/9.11/auth0.min.js"></script>
+<script src="/config.js"></script>
+
+<script>
+    const urlSearchParams = new URLSearchParams(window.location.hash);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    console.log(params);
+    const url = window.location.href;
+    let token = "";
+    if (url.includes("access_token")) {
+        const rawToken = url.substring(url.indexOf("access_token=") + 13);
+        rawToken.includes("&") ? token = rawToken.substring(0, rawToken.indexOf("&")) : token = rawToken;
+        document.querySelector(".profileHeader").innerText = "User Profile:";
+        console.info(rawToken);
+        console.info(token);
+        fetch("https://"+config.domain+"/userinfo", {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        }).then(req => {
+            req.json().then(profile => {
+                console.log(profile);
+                const profileTable = document.querySelector(".parsedProfile");
+                for (attr in profile) {
+                    profileTable.innerHTML += `<tr><td>${attr}</td><td>${profile[attr]}</td></tr>`
+                }
+                profileTable.innerHTML += `<tr><td>User Metadata</td><td>${JSON.stringify(profile[attr])}</td></tr>`
+            });
+        })
+    }
+</script>
+
+</html>
